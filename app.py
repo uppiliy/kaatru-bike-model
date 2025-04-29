@@ -2,30 +2,38 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load model
-model = joblib.load('model.pkl')  # Make sure this file exists
-
 st.title("Bike Rental Count Predictor 🚲")
 
-# Input features
-temp = st.number_input("Temperature", min_value=0.0, max_value=1.0, value=0.5)
-hum = st.number_input("Humidity", min_value=0.0, max_value=1.0, value=0.5)
-windspeed = st.number_input("Windspeed", min_value=0.0, max_value=1.0, value=0.2)
+# Input numeric values
+temp = st.number_input("Temperature", 0.0, 1.0, 0.5)
+atemp = st.number_input("Feels-like Temp (atemp)", 0.0, 1.0, 0.5)
+hum = st.number_input("Humidity", 0.0, 1.0, 0.5)
+windspeed = st.number_input("Windspeed", 0.0, 1.0, 0.2)
 
-# Example categorical features (one-hot encoded ones)
-season_summer = st.checkbox("Is it Summer?")
-season_winter = st.checkbox("Is it Winter?")
+# Input categorical values
+season = st.selectbox("Season", [1, 2, 3, 4])  # e.g. 1=spring, etc.
+yr = st.selectbox("Year", [0, 1])  # 0 = 2011, 1 = 2012
+mnth = st.selectbox("Month", list(range(1, 13)))
+weekday = st.selectbox("Weekday", list(range(0, 7)))  # 0=Sunday
+weathersit = st.selectbox("Weather", [1, 2, 3])
 
-# Prepare input row (order matters)
+# Assemble input in correct column order
 input_data = pd.DataFrame([{
     'temp': temp,
+    'atemp': atemp,
     'hum': hum,
     'windspeed': windspeed,
-    'season_2': 1 if season_summer else 0,
-    'season_4': 1 if season_winter else 0,
-    # Add more one-hot columns based on your model
+    'season': season,
+    'yr': yr,
+    'mnth': mnth,
+    'weekday': weekday,
+    'weathersit': weathersit
 }])
 
+# Load the model
+model = joblib.load('model.pkl')
+
+# Predict
 if st.button("Predict"):
     prediction = model.predict(input_data)
-    st.success(f"Estimated Count: {int(prediction[0])}")
+    st.success(f"Estimated Bike Rentals: {int(prediction[0])}")
